@@ -60,6 +60,8 @@ module.exports = {
 			ikinciKategori
 		);
 
+		// console.log(randomFilmList);
+
 		if (randomFilmList.length === 0) {
 			await interaction.editReply({
 				content: 'Uygun film bulunamadi.',
@@ -69,7 +71,7 @@ module.exports = {
 
 		const result = await GetRecommendation(randomFilmList);
 
-		if (result === null) {
+		if (!result) {
 			await interaction.editReply({
 				content: 'Uygun film bulunamadi.',
 			});
