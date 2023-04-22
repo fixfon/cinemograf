@@ -1,11 +1,12 @@
-const { Events } = require('discord.js');
+import { CommandInteraction, Events } from 'discord.js';
+import { Cinemograf } from '~/structures/Cinemograf';
 
 module.exports = {
 	name: Events.InteractionCreate,
-	async execute(client, interaction) {
+	async execute(bot: Cinemograf, interaction: CommandInteraction) {
 		if (!interaction.isChatInputCommand()) return;
 
-		const command = interaction.client.commands.get(interaction.commandName);
+		const command = bot.getCommand(interaction.commandName);
 
 		if (!command) {
 			console.error(
