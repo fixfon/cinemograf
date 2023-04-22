@@ -1,6 +1,6 @@
 import { Events } from 'discord.js';
-import { Cinemograf } from '~/structures/Cinemograf';
-import { IEvent } from '~/types/IEvent';
+import { Cinemograf } from '../structures/Cinemograf';
+import type { IEvent } from '../types/IEvent';
 
 const clientReady: IEvent = {
 	name: Events.ClientReady,
@@ -12,3 +12,5 @@ const clientReady: IEvent = {
 		// });
 	},
 };
+
+export default clientReady;

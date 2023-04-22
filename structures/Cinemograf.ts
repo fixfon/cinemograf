@@ -9,8 +9,8 @@ import {
 import dotenv from 'dotenv';
 import { readdirSync } from 'fs';
 import { join } from 'path';
-import { ICommand } from '~/types/ICommand';
-import { IEvent } from '~/types/IEvent';
+import type { ICommand } from '../types/ICommand';
+import type { IEvent } from '../types/IEvent';
 dotenv.config();
 
 const intents: Intent[] = [
@@ -78,7 +78,7 @@ export class Cinemograf {
 
 			for (const eventFileName of eventFiles) {
 				const eventFilePath = join(eventFolderPath, eventFileName);
-				const event: IEvent = require(eventFilePath);
+				const event: IEvent = require(eventFilePath).default;
 
 				if (!event.execute) return;
 
@@ -102,11 +102,13 @@ export class Cinemograf {
 				// Grab all the command files from the commands directory you created earlier
 				const commandsPath = join(commandFoldersPath, folder);
 				const commandFiles = readdirSync(commandsPath).filter((file) =>
-					file.endsWith('.ts')
+					file.endsWith('.js')
 				);
+				console.log(commandFiles);
 				for (const file of commandFiles) {
+					console.log(file);
 					const filePath = join(commandsPath, file);
-					const command = require(filePath);
+					const command: ICommand = require(filePath).default;
 					if ('data' in command && 'execute' in command && !command.adminOnly) {
 						this.commands.set(command.data.name, command);
 					} else if (
@@ -137,18 +139,26 @@ export class Cinemograf {
 				command.data.toJSON()
 			);
 
-			await this.rest.put(Routes.applicationCommands(this.clientId), {
-				body: commands,
-			});
-			console.log('General commands registered!');
+			console.log('commands', commands);
+			console.log('adminCommands', adminCommands);
 
-			await this.rest.put(
+			const res1 = await this.rest.put(
+				Routes.applicationCommands(this.clientId),
+				{
+					body: commands,
+				}
+			);
+			console.log('General commands registered!');
+			console.log('res1', res1);
+
+			const res2 = await this.rest.put(
 				Routes.applicationGuildCommands(this.clientId, this.SUPPORT_SERVER_ID),
 				{
 					body: adminCommands,
 				}
 			);
 			console.log('Admin commands registered!');
+			console.log('res2', res2);
 		} catch (error) {
 			console.error('Error registering commands.', error);
 		}

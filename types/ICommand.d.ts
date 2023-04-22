@@ -4,8 +4,10 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 
-export interface ICommand {
+interface ICommand {
 	data: SlashCommandBuilder | ContextMenuCommandBuilder;
 	adminOnly?: boolean;
 	execute(interaction: CommandInteraction): Promise<void> | void;
 }
+
+export { ICommand };

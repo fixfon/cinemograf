@@ -1,4 +1,4 @@
-import { Cinemograf } from '~/structures/Cinemograf';
+import { Cinemograf } from './structures/Cinemograf';
 
 const cinemografInstance = Cinemograf.getInstance();
 

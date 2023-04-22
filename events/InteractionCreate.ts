@@ -1,9 +1,12 @@
 import { CommandInteraction, Events } from 'discord.js';
-import { Cinemograf } from '~/structures/Cinemograf';
+import { Cinemograf } from '../structures/Cinemograf';
+import type { IEvent } from '../types/IEvent';
 
-module.exports = {
+const interactionCreate: IEvent = {
 	name: Events.InteractionCreate,
+	once: false,
 	async execute(bot: Cinemograf, interaction: CommandInteraction) {
+		console.log('hit interaction create');
 		if (!interaction.isChatInputCommand()) return;
 
 		const command = bot.getCommand(interaction.commandName);
@@ -23,3 +26,5 @@ module.exports = {
 		}
 	},
 };
+
+export default interactionCreate;
