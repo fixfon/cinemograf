@@ -24,8 +24,8 @@
 		"openai": "^3.2.1"
 	},
 	"devDependencies": {
-		"@types/node": "^18.15.11",
-		"eslint": "^8.38.0",
+		"@types/node": "^18.15.13",
+		"eslint": "^8.39.0",
 		"nodemon": "^2.0.22",
 		"ts-node": "^10.9.1",
 		"tslib": "^2.5.0",
