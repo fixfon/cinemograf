@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String           @id @default(cuid())
+  username       String
+  role           Role             @default(USER)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  watchLaterList UserWatchLater[]
+  watchedList    UserWatched[]
+  ignoreList     UserIgnore[]
+}
+
+model UserWatchLater {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  movieId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User  User  @relation(fields: [userId], references: [id])
+  Movie Movie @relation(fields: [movieId], references: [id])
+}
+
+model UserWatched {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  movieId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User  User  @relation(fields: [userId], references: [id])
+  Movie Movie @relation(fields: [movieId], references: [id])
+}
+
+model UserIgnore {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  movieId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User  User  @relation(fields: [userId], references: [id])
+  Movie Movie @relation(fields: [movieId], references: [id])
+}
+
+model Movie {
+  id          Int      @id @default(autoincrement())
+  title       String
+  imdbId      String
+  releaseYear Int
+  coverImage  String
+  aiOutput    String
+  emojiOutput String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  UserIgnore      UserIgnore[]
+  UserWatched     UserWatched[]
+  UserWatchLater  UserWatchLater[]
+  MovieGenres     MovieGenres[]
+  MovieCategories MovieCategories[]
+}
+
+model Genre {
+  id          Int           @id @default(autoincrement())
+  name        String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  MovieGenres MovieGenres[]
+}
+
+model MovieGenres {
+  id        Int      @id @default(autoincrement())
+  movieId   Int
+  genreId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Movie Movie @relation(fields: [movieId], references: [id])
+  Genre Genre @relation(fields: [genreId], references: [id])
+}
+
+model Category {
+  id              Int               @id @default(autoincrement())
+  name            String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  MovieCategories MovieCategories[]
+}
+
+model MovieCategories {
+  id         Int      @id @default(autoincrement())
+  movieId    Int
+  categoryId Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  Movie    Movie    @relation(fields: [movieId], references: [id])
+  Category Category @relation(fields: [categoryId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
