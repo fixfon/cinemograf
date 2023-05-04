@@ -55,6 +55,7 @@ model Movie {
   id          Int      @id @default(autoincrement())
   title       String
   imdbId      String
+  imdbRating  String
   releaseYear Int
   coverImage  String
   aiOutput    String
