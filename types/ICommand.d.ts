@@ -5,7 +5,10 @@ import {
 } from 'discord.js';
 
 interface ICommand {
-	data: SlashCommandBuilder | ContextMenuCommandBuilder;
+	data:
+		| SlashCommandBuilder
+		| Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
+		| ContextMenuCommandBuilder;
 	adminOnly?: boolean;
 	execute(interaction: CommandInteraction): Promise<void> | void;
 }
