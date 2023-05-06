@@ -1,5 +1,7 @@
 import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
 import type { ICommand } from '../../types/ICommand';
+import { database } from '../../structures/Database';
+import * as movieGenres from './movieGenres.json';
 
 const ping: ICommand = {
 	data: new SlashCommandBuilder()
@@ -7,10 +9,10 @@ const ping: ICommand = {
 		.setDescription('Provides information about the user.'),
 	adminOnly: false,
 	async execute(interaction: CommandInteraction) {
-		console.log('interaction', interaction);
-		// interaction.user is the object representing the User who ran the command
-		// interaction.member is the GuildMember object, which represents the user in the specific guild
-		await interaction.reply(
+		await interaction.deferReply();
+
+		await database.updateAllMovieGenres(movieGenres);
+		await interaction.editReply(
 			`This command was run by ${interaction.user.username}, who joined on ${interaction.member}.`
 		);
 	},
