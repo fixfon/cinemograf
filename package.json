@@ -14,23 +14,25 @@
 	"scripts": {
 		"dev": "nodemon index.ts",
 		"build": "tsc --project tsconfig.json",
-		"start": "npm run start:bot",
-		"start:bot": "npm run build && node --enable-source-maps dist/bot.js"
+		"start": "pnpm start:bot",
+		"start:bot": "pnpm build && node --enable-source-maps dist/bot.js",
+		"update-data": "ts-node ./lib/fetchDb.ts"
 	},
 	"dependencies": {
 		"@notionhq/client": "^2.2.5",
 		"@prisma/client": "4.13.0",
-		"discord.js": "^14.10.2",
-		"dotenv": "^16.0.3",
-		"openai": "^3.2.1"
+		"discord.js": "^14.11.0",
+		"dotenv": "^16.3.1",
+		"googleapis": "^118.0.0",
+		"openai": "^3.3.0"
 	},
 	"devDependencies": {
-		"@types/node": "^18.16.4",
-		"eslint": "^8.39.0",
+		"@types/node": "^18.16.18",
+		"eslint": "^8.43.0",
 		"nodemon": "^2.0.22",
-		"prisma": "^4.13.0",
+		"prisma": "^4.16.0",
 		"ts-node": "^10.9.1",
-		"tslib": "^2.5.0",
-		"typescript": "^5.0.4"
+		"tslib": "^2.5.3",
+		"typescript": "^5.1.3"
 	}
 }
