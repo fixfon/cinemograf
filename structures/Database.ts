@@ -1,4 +1,6 @@
-import { Movie, PrismaClient, Role } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
+import updateGenres from '../lib/updateGenres';
+import updateCategories from '../lib/updateCategories';
 
 interface IEditMovie {
 	id: number;
@@ -25,17 +27,6 @@ interface ICreateMovie {
 	categories: string[];
 }
 
-interface IJsonMovie {
-	title: string;
-	releaseYear: number;
-	genres: string;
-	imdbId: string;
-	imdbRating: string;
-	emojiOutput: string;
-	coverImage: string;
-	aiOutput: string;
-}
-
 class Database {
 	public prisma: PrismaClient;
 
@@ -43,44 +34,38 @@ class Database {
 		this.prisma = new PrismaClient();
 	}
 
-	async getAllCategories() {
-		return await this.prisma.category.findMany();
-	}
-
 	async createCategory(name: string) {
-		return await this.prisma.category.create({
+		await this.prisma.category.create({
 			data: {
 				name,
 			},
 		});
-	}
 
-	async getAllGenres() {
-		return await this.prisma.genre.findMany();
+		const allCategories = await this.prisma.category.findMany({
+			select: {
+				id: true,
+				name: true,
+			},
+		});
+
+		updateCategories(allCategories);
 	}
 
 	async createGenre(name: string) {
-		return await this.prisma.genre.create({
+		await this.prisma.genre.create({
 			data: {
 				name,
 			},
 		});
-	}
 
-	async updateAllMovieGenres(genreList: string[][]) {
-		const movieIds = await this.prisma.movie.findMany({
+		const allGenres = await this.prisma.genre.findMany({
 			select: {
 				id: true,
+				name: true,
 			},
 		});
 
-		const movieIdList = movieIds.map((movie) => movie.id);
-
-		return await this.prisma.movie.updateMany({
-			data: {
-				
-			}
-		});
+		updateGenres(allGenres);
 	}
 
 	async getRandomThreeMovies(genre = '', category = '') {
@@ -129,6 +114,8 @@ class Database {
 			},
 		});
 	}
+
+	async createBulkMovie({}: string) {}
 
 	async createMovie({
 		title,
