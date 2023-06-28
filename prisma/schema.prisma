@@ -19,7 +19,6 @@ model User {
 }
 
 model UserWatchLater {
-  id        Int      @id @default(autoincrement())
   userId    String
   movieId   Int
   createdAt DateTime @default(now())
@@ -27,10 +26,11 @@ model UserWatchLater {
 
   User  User  @relation(fields: [userId], references: [id])
   Movie Movie @relation(fields: [movieId], references: [id])
+
+  @@id([userId, movieId])
 }
 
 model UserWatched {
-  id        Int      @id @default(autoincrement())
   userId    String
   movieId   Int
   createdAt DateTime @default(now())
@@ -38,10 +38,11 @@ model UserWatched {
 
   User  User  @relation(fields: [userId], references: [id])
   Movie Movie @relation(fields: [movieId], references: [id])
+
+  @@id([userId, movieId])
 }
 
 model UserIgnore {
-  id        Int      @id @default(autoincrement())
   userId    String
   movieId   Int
   createdAt DateTime @default(now())
@@ -49,6 +50,8 @@ model UserIgnore {
 
   User  User  @relation(fields: [userId], references: [id])
   Movie Movie @relation(fields: [movieId], references: [id])
+
+  @@id([userId, movieId])
 }
 
 model Movie {
@@ -68,6 +71,9 @@ model Movie {
   UserWatchLater  UserWatchLater[]
   MovieGenres     MovieGenres[]
   MovieCategories MovieCategories[]
+
+  @@unique([imdbId])
+  @@index([title])
 }
 
 model Genre {
@@ -76,6 +82,9 @@ model Genre {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   MovieGenres MovieGenres[]
+
+  @@unique([name])
+  @@index([name])
 }
 
 model MovieGenres {
