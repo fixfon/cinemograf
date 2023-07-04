@@ -25,7 +25,7 @@ class FetchSheet {
 		const sheets = google.sheets({ version: 'v4', auth: this.oAuth });
 		const response = await sheets.spreadsheets.values.get({
 			spreadsheetId: this.spreadsheetId,
-			range: 'A2:H1000',
+			range: "'Movies'!A2:I1000",
 		});
 		return response.data.values;
 	}

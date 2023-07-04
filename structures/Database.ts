@@ -1,6 +1,9 @@
 import { PrismaClient, Role } from '@prisma/client';
 import updateGenres from '../lib/updateGenres';
 import updateCategories from '../lib/updateCategories';
+import { IMovie } from '../types/IMovie';
+import { getAllGenres } from '../lib/getAllGenres';
+import { getAllCategories } from '../lib/getAllCategories';
 
 interface IEditMovie {
 	id: number;
@@ -13,18 +16,6 @@ interface IEditMovie {
 	emojiOutput?: string;
 	genres?: string[];
 	categories?: string[];
-}
-
-interface ICreateMovie {
-	title: string;
-	imdbId: string;
-	imdbRating: string;
-	releaseYear: number;
-	coverImage: string;
-	aiOutput: string;
-	emojiOutput: string;
-	genres: string[];
-	categories: string[];
 }
 
 class Database {
@@ -51,11 +42,51 @@ class Database {
 		updateCategories(allCategories);
 	}
 
+	async createBulkCategories(name: string[]) {
+		await this.prisma.category.createMany({
+			data: name.map((name) => {
+				return {
+					name,
+				};
+			}),
+			skipDuplicates: true,
+		});
+
+		const allCategories = await this.prisma.category.findMany({
+			select: {
+				id: true,
+				name: true,
+			},
+		});
+
+		updateCategories(allCategories);
+	}
+
 	async createGenre(name: string) {
 		await this.prisma.genre.create({
 			data: {
 				name,
 			},
+		});
+
+		const allGenres = await this.prisma.genre.findMany({
+			select: {
+				id: true,
+				name: true,
+			},
+		});
+
+		updateGenres(allGenres);
+	}
+
+	async createBulkGenres(name: string[]) {
+		await this.prisma.genre.createMany({
+			data: name.map((name) => {
+				return {
+					name,
+				};
+			}),
+			skipDuplicates: true,
 		});
 
 		const allGenres = await this.prisma.genre.findMany({
@@ -115,7 +146,54 @@ class Database {
 		});
 	}
 
-	async createBulkMovie({}: string) {}
+	async createBulkMovie(movies: IMovie[]) {
+		const genreIds = await this.prisma.genre.findMany({
+			where: {
+				name: {
+					in: movies.map((movie) => movie.genres).flat(),
+				},
+			},
+		});
+
+		const categoryIds = await this.prisma.category.findMany({
+			where: {
+				name: {
+					in: movies.map((movie) => movie.categories).flat(),
+				},
+			},
+		});
+
+		const moviesToCreate = movies.map((movie) => {
+			return {
+				title: movie.title,
+				imdbId: movie.imdbId,
+				imdbRating: movie.imdbRating,
+				releaseYear: movie.releaseYear,
+				coverImage: movie.coverImage,
+				aiOutput: movie.aiOutput,
+				emojiOutput: movie.emojiOutput,
+				MovieGenres: {
+					connect: [
+						...genreIds
+							.filter((genre) => movie.genres.includes(genre.name))
+							.map((genre) => ({ id: genre.id })),
+					],
+				},
+				MovieCategories: {
+					connect: [
+						...categoryIds
+							.filter((category) => movie.categories.includes(category.name))
+							.map((category) => ({ id: category.id })),
+					],
+				},
+			};
+		});
+
+		return await this.prisma.movie.createMany({
+			data: moviesToCreate,
+			skipDuplicates: true,
+		});
+	}
 
 	async createMovie({
 		title,
@@ -127,22 +205,17 @@ class Database {
 		emojiOutput,
 		genres,
 		categories,
-	}: ICreateMovie) {
-		const genreIds = await this.prisma.genre.findMany({
-			where: {
-				name: {
-					in: genres,
-				},
-			},
-		});
+	}: IMovie) {
+		const allGenres = getAllGenres();
+		const genreIds = allGenres
+			.filter((genre) => genres.includes(genre.name))
+			.map((genre) => genre.id);
 
-		const categoryIds = await this.prisma.category.findMany({
-			where: {
-				name: {
-					in: categories,
-				},
-			},
-		});
+		const allCategories = getAllCategories();
+
+		const categoryIds = allCategories
+			.filter((category) => categories.includes(category.name))
+			.map((category) => category.id);
 
 		return await this.prisma.movie.create({
 			data: {
@@ -154,10 +227,10 @@ class Database {
 				aiOutput,
 				emojiOutput,
 				MovieGenres: {
-					connect: [...genreIds.map((genre) => ({ id: genre.id }))],
+					connect: [...genreIds.map((genre) => ({ id: genre }))],
 				},
 				MovieCategories: {
-					connect: [...categoryIds.map((category) => ({ id: category.id }))],
+					connect: [...categoryIds.map((category) => ({ id: category }))],
 				},
 			},
 			include: {
