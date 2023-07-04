@@ -104,9 +104,9 @@ export class Cinemograf {
 				const commandFiles = readdirSync(commandsPath).filter((file) =>
 					file.endsWith('.js')
 				);
-				console.log(commandFiles);
+				// console.log(commandFiles);
 				for (const file of commandFiles) {
-					console.log(file);
+					// console.log(file);
 					const filePath = join(commandsPath, file);
 					const command: ICommand = require(filePath).default;
 					if ('data' in command && 'execute' in command && !command.adminOnly) {
@@ -149,7 +149,7 @@ export class Cinemograf {
 				}
 			);
 			console.log('General commands registered!');
-			console.log('res1', res1);
+			// console.log('res1', res1);
 
 			const res2 = await this.rest.put(
 				Routes.applicationGuildCommands(this.clientId, this.SUPPORT_SERVER_ID),
@@ -158,7 +158,7 @@ export class Cinemograf {
 				}
 			);
 			console.log('Admin commands registered!');
-			console.log('res2', res2);
+			// console.log('res2', res2);
 		} catch (error) {
 			console.error('Error registering commands.', error);
 		}
