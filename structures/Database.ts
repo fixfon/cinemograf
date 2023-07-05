@@ -138,6 +138,14 @@ class Database {
 		});
 	}
 
+	async getAllMovies() {
+		return await this.prisma.movie.findMany({
+			select: {
+				imdbId: true,
+			},
+		});
+	}
+
 	async getMovieByImdbId(imdbId: string) {
 		return await this.prisma.movie.findFirst({
 			where: {
@@ -146,7 +154,7 @@ class Database {
 		});
 	}
 
-	async createBulkMovie(movies: IMovie[]) {
+	async createBulkMovies(movies: IMovie[]) {
 		const genreIds = await this.prisma.genre.findMany({
 			where: {
 				name: {
@@ -163,36 +171,58 @@ class Database {
 			},
 		});
 
-		const moviesToCreate = movies.map((movie) => {
-			return {
-				title: movie.title,
-				imdbId: movie.imdbId,
-				imdbRating: movie.imdbRating,
-				releaseYear: movie.releaseYear,
-				coverImage: movie.coverImage,
-				aiOutput: movie.aiOutput,
-				emojiOutput: movie.emojiOutput,
-				MovieGenres: {
-					connect: [
-						...genreIds
-							.filter((genre) => movie.genres.includes(genre.name))
-							.map((genre) => ({ id: genre.id })),
-					],
-				},
-				MovieCategories: {
-					connect: [
-						...categoryIds
-							.filter((category) => movie.categories.includes(category.name))
-							.map((category) => ({ id: category.id })),
-					],
-				},
-			};
-		});
-
-		return await this.prisma.movie.createMany({
-			data: moviesToCreate,
-			skipDuplicates: true,
-		});
+		try {
+			movies.forEach(async (movie) => {
+				await this.prisma.movie.create({
+					data: {
+						title: movie.title,
+						imdbId: movie.imdbId,
+						imdbRating: movie.imdbRating,
+						releaseYear: movie.releaseYear,
+						coverImage: movie.coverImage,
+						aiOutput: movie.aiOutput,
+						emojiOutput: movie.emojiOutput,
+						MovieGenres: {
+							createMany: {
+								data: [
+									...genreIds
+										.filter((genre) => movie.genres.includes(genre.name))
+										.map((genre) => {
+											return {
+												genreId: genre.id,
+											};
+										}),
+								],
+								skipDuplicates: true,
+							},
+						},
+						MovieCategories: {
+							createMany: {
+								data: [
+									...categoryIds
+										.filter((category) =>
+											movie.categories.includes(category.name)
+										)
+										.map((category) => {
+											return {
+												categoryId: category.id,
+											};
+										}),
+								],
+								skipDuplicates: true,
+							},
+						},
+					},
+					include: {
+						MovieGenres: true,
+						MovieCategories: true,
+					},
+				});
+			});
+			return;
+		} catch (error: any) {
+			throw new Error(error);
+		}
 	}
 
 	async createMovie({
