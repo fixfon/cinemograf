@@ -61,9 +61,9 @@ const getNonExistingMovies = async (movies: IMovie[]) => {
 	return nonExistingMovies;
 };
 
-const addBulkMovie: ICommand = {
+const createBulkMovie: ICommand = {
 	data: new SlashCommandBuilder()
-		.setName('add-bulk-movie')
+		.setName('create-bulk-movie')
 		.setDescription('Create movies added into the spreadsheet.')
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	adminOnly: true,
@@ -72,7 +72,7 @@ const addBulkMovie: ICommand = {
 		const author = interaction.user;
 
 		const replyEmbed = new EmbedBuilder()
-			.setTitle('Bulk Movie Add')
+			.setTitle('Create Bulk Movie')
 			.setDescription('Creating movies added into the spreadsheet.')
 			.setColor('Green')
 			.setTimestamp()
@@ -161,4 +161,4 @@ const addBulkMovie: ICommand = {
 	},
 };
 
-export default addBulkMovie;
+export default createBulkMovie;
