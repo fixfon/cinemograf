@@ -27,7 +27,7 @@ const createGenre: ICommand = {
 		const res = await database.createGenre(genre);
 		console.log('res', res);
 		await interaction.editReply(
-			`Created a genre with name ${genre} on database by ${interaction.member}`
+			`Created a genre with name ${genre} on database by ${interaction.member}\nYou should restart the bot to see the changes on select menus etc.`
 		);
 	},
 };

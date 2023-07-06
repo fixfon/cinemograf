@@ -27,7 +27,7 @@ const createCategory: ICommand = {
 		const res = await database.createCategory(category);
 		console.log('res', res);
 		await interaction.editReply(
-			`Created a category with name **${category}** on database by ${interaction.member}`
+			`Created a category with name **${category}** on database by ${interaction.member}\nYou should restart the bot to see the changes on select menus etc.`
 		);
 	},
 };
