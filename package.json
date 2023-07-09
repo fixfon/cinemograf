@@ -19,20 +19,19 @@
 		"update-data": "ts-node ./lib/fetchDb.ts"
 	},
 	"dependencies": {
-		"@notionhq/client": "^2.2.5",
 		"@prisma/client": "4.16.2",
 		"discord.js": "^14.11.0",
 		"dotenv": "^16.3.1",
-		"googleapis": "^118.0.0",
+		"googleapis": "^120.0.0",
 		"openai": "^3.3.0"
 	},
 	"devDependencies": {
-		"@types/node": "^18.16.18",
-		"eslint": "^8.43.0",
-		"nodemon": "^2.0.22",
-		"prisma": "^4.16.0",
+		"@types/node": "^20.4.1",
+		"eslint": "^8.44.0",
+		"nodemon": "^3.0.1",
+		"prisma": "^4.16.2",
 		"ts-node": "^10.9.1",
-		"tslib": "^2.5.3",
-		"typescript": "^5.1.3"
+		"tslib": "^2.6.0",
+		"typescript": "^5.1.6"
 	}
 }
