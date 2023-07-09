@@ -257,10 +257,16 @@ class Database {
 				aiOutput,
 				emojiOutput,
 				MovieGenres: {
-					connect: [...genreIds.map((genre) => ({ id: genre }))],
+					createMany: {
+						data: [...genreIds.map((genre) => ({ genreId: genre }))],
+					},
 				},
 				MovieCategories: {
-					connect: [...categoryIds.map((category) => ({ id: category }))],
+					createMany: {
+						data: [
+							...categoryIds.map((category) => ({ categoryId: category })),
+						],
+					},
 				},
 			},
 			include: {
