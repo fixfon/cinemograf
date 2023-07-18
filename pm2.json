@@ -1,0 +1,8 @@
+{
+	"apps": [
+		{
+			"name": "Cinemograf",
+			"script": "pnpm start:bot"
+		}
+	]
+}
