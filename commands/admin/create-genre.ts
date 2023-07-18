@@ -8,7 +8,7 @@ import { database } from '../../structures/Database';
 
 const createGenre: ICommand = {
 	data: new SlashCommandBuilder()
-		.setName('crate-genre')
+		.setName('create-genre')
 		.setDescription('Creates genre.')
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 		.addStringOption((option) =>

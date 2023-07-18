@@ -8,7 +8,7 @@ import { database } from '../../structures/Database';
 
 const createCategory: ICommand = {
 	data: new SlashCommandBuilder()
-		.setName('crate-category')
+		.setName('create-category')
 		.setDescription('Creates category.')
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 		.addStringOption((option) =>
