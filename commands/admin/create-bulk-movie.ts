@@ -144,17 +144,73 @@ const createBulkMovie: ICommand = {
 				});
 			}
 
-			if (nonExistingMovies.length > 0) {
-				await database.createBulkMovies(bulkMovies);
-				replyEmbed.addFields({
-					name: 'Created Movies',
-					value: `${nonExistingMovies.map((m) => m.title).join(', ')}`,
-					inline: true,
-				});
-			}
 			await interaction.editReply({
 				embeds: [replyEmbed],
 			});
+
+			if (nonExistingMovies.length > 0) {
+				const createdCount = await database.createBulkMovies(bulkMovies);
+				const movieTitleString = nonExistingMovies
+					.map((m) => m.title)
+					.join('\n');
+
+				// embed fields have a limit of 1024 characters
+				// so we need to split the string into chunks but every movie ends with \n
+
+				const chunkSize = 1024;
+				const chunks: string[] = [];
+
+				for (let i = 0; i < movieTitleString.length; i += chunkSize) {
+					// be sure to chunk ends with \n so we don't cut the movie title to another chunk.
+
+					const chunk = movieTitleString.substring(i, i + chunkSize);
+					const lastChar = chunk[chunk.length - 1];
+
+					if (lastChar !== '\n') {
+						const lastNewLineIndex = chunk.lastIndexOf('\n');
+						const chunkWithoutLastLine = chunk.substring(0, lastNewLineIndex);
+						chunks.push(chunkWithoutLastLine);
+					} else {
+						chunks.push(chunk);
+					}
+				}
+
+				if (chunks) {
+					const chunkEmbedArray = [];
+
+					for (let i = 0; i < chunks.length; i++) {
+						const chunk = chunks[i];
+
+						const chunkEmbed = new EmbedBuilder()
+							.setTitle('Create Bulk Movie')
+							.setDescription(`A total of ${createdCount} movies were created.`)
+							.setColor('Green')
+							.setTimestamp()
+							.setFooter({
+								text: `Requested by ${author.username}`,
+								iconURL: `${author.displayAvatarURL()}`,
+							})
+							.setFields({
+								name: `Created Movies #${i + 1}`,
+								value: `${chunk}`,
+							});
+
+						chunkEmbedArray.push(chunkEmbed);
+					}
+
+					await interaction.followUp({ embeds: [...chunkEmbedArray] });
+				} else {
+					replyEmbed.setFields({
+						name: 'Created Movies',
+						value: `${nonExistingMovies.map((m) => m.title).join('\n')}`,
+						inline: true,
+					});
+
+					await interaction.editReply({
+						embeds: [replyEmbed],
+					});
+				}
+			}
 		} catch (error: any) {
 			await interaction.editReply(`Error occured: ${error.message}`);
 		}
