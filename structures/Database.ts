@@ -104,24 +104,6 @@ class Database {
 			select: {
 				id: true,
 			},
-			// where: {
-			// 	AND: {
-			// 		MovieGenres: {
-			// 			some: {
-			// 				Genre: {
-			// 					name: genre !== '' ? genre : undefined,
-			// 				},
-			// 			},
-			// 		},
-			// 		MovieCategories: {
-			// 			some: {
-			// 				Category: {
-			// 					name: category !== '' ? category : undefined,
-			// 				},
-			// 			},
-			// 		},
-			// 	},
-			// },
 		});
 
 		const allMovieIds = allMovieIdObject.map((movie) => movie.id);
@@ -141,6 +123,7 @@ class Database {
 	async getAllMovies() {
 		return await this.prisma.movie.findMany({
 			select: {
+				id: true,
 				imdbId: true,
 			},
 		});
@@ -172,54 +155,181 @@ class Database {
 		});
 
 		try {
-			movies.forEach(async (movie) => {
-				await this.prisma.movie.create({
-					data: {
-						title: movie.title,
-						imdbId: movie.imdbId,
-						imdbRating: movie.imdbRating,
-						releaseYear: movie.releaseYear,
-						coverImage: movie.coverImage,
-						aiOutput: movie.aiOutput,
-						emojiOutput: movie.emojiOutput,
-						MovieGenres: {
-							createMany: {
-								data: [
-									...genreIds
-										.filter((genre) => movie.genres.includes(genre.name))
-										.map((genre) => {
-											return {
-												genreId: genre.id,
-											};
-										}),
-								],
-								skipDuplicates: true,
-							},
-						},
-						MovieCategories: {
-							createMany: {
-								data: [
-									...categoryIds
-										.filter((category) =>
-											movie.categories.includes(category.name)
-										)
-										.map((category) => {
-											return {
-												categoryId: category.id,
-											};
-										}),
-								],
-								skipDuplicates: true,
-							},
-						},
-					},
-					include: {
-						MovieGenres: true,
-						MovieCategories: true,
-					},
+			// Solution #1: upsert many with transaction
+
+			// await this.prisma.$transaction(
+			// 	movies.map((movie) => {
+			// 		return this.prisma.movie.upsert({
+			// 			where: {
+			// 				imdbId: movie.imdbId,
+			// 			},
+			// 			update: {},
+			// 			create: {
+			// 				title: movie.title,
+			// 				imdbId: movie.imdbId,
+			// 				imdbRating: movie.imdbRating,
+			// 				releaseYear: movie.releaseYear,
+			// 				coverImage: movie.coverImage,
+			// 				aiOutput: movie.aiOutput,
+			// 				emojiOutput: movie.emojiOutput,
+			// 				MovieGenres: {
+			// 					createMany: {
+			// 						data: [
+			// 							...genreIds
+			// 								.filter((genre) => movie.genres.includes(genre.name))
+			// 								.map((genre) => {
+			// 									return {
+			// 										genreId: genre.id,
+			// 									};
+			// 								}),
+			// 						],
+			// 						skipDuplicates: true,
+			// 					},
+			// 				},
+			// 				MovieCategories: {
+			// 					createMany: {
+			// 						data: [
+			// 							...categoryIds
+			// 								.filter((category) =>
+			// 									movie.categories.includes(category.name)
+			// 								)
+			// 								.map((category) => {
+			// 									return {
+			// 										categoryId: category.id,
+			// 									};
+			// 								}),
+			// 						],
+			// 						skipDuplicates: true,
+			// 					},
+			// 				},
+			// 			},
+			// 			include: {
+			// 				MovieGenres: true,
+			// 				MovieCategories: true,
+			// 			},
+			// 		});
+			// 	})
+			// );
+
+			// Solution #2
+			// movies.forEach(async (movie) => {
+			// 	await this.prisma.movie.upsert({
+			// 		where: {
+			// 			imdbId: movie.imdbId,
+			// 		},
+			// 		update: {},
+			// 		create: {
+			// 			title: movie.title,
+			// 			imdbId: movie.imdbId,
+			// 			imdbRating: movie.imdbRating,
+			// 			releaseYear: movie.releaseYear,
+			// 			coverImage: movie.coverImage,
+			// 			aiOutput: movie.aiOutput,
+			// 			emojiOutput: movie.emojiOutput,
+			// 			MovieGenres: {
+			// 				createMany: {
+			// 					data: [
+			// 						...genreIds
+			// 							.filter((genre) => movie.genres.includes(genre.name))
+			// 							.map((genre) => {
+			// 								return {
+			// 									genreId: genre.id,
+			// 								};
+			// 							}),
+			// 					],
+			// 					skipDuplicates: true,
+			// 				},
+			// 			},
+			// 			MovieCategories: {
+			// 				createMany: {
+			// 					data: [
+			// 						...categoryIds
+			// 							.filter((category) =>
+			// 								movie.categories.includes(category.name)
+			// 							)
+			// 							.map((category) => {
+			// 								return {
+			// 									categoryId: category.id,
+			// 								};
+			// 							}),
+			// 					],
+			// 					skipDuplicates: true,
+			// 				},
+			// 			},
+			// 		},
+			// 		include: {
+			// 			MovieGenres: true,
+			// 			MovieCategories: true,
+			// 		},
+			// 	});
+			// });
+
+			// Solution #3 - the fastest one so far
+
+			const count = await this.prisma.movie.createMany({
+				skipDuplicates: true,
+				data: [
+					...movies.map((movie) => {
+						return {
+							title: movie.title,
+							imdbId: movie.imdbId,
+							imdbRating: movie.imdbRating,
+							releaseYear: movie.releaseYear,
+							coverImage: movie.coverImage,
+							aiOutput: movie.aiOutput,
+							emojiOutput: movie.emojiOutput,
+						};
+					}),
+				],
+			});
+
+			const allMovies = await this.getAllMovies();
+
+			let movieCategories: {
+				movieId: number;
+				categoryId: number;
+			}[] = [];
+
+			let movieGenres: {
+				movieId: number;
+				genreId: number;
+			}[] = [];
+
+			movies.forEach((movie) => {
+				const movieId = allMovies.find((m) => m.imdbId === movie.imdbId);
+				if (!movieId) return;
+
+				movie.categories.forEach((category) => {
+					movieCategories.push({
+						movieId: movieId.id,
+						categoryId: categoryIds.find((c) => c.name === category)
+							?.id as number,
+					});
+				});
+
+				movie.genres.forEach((genre) => {
+					movieGenres.push({
+						movieId: movieId.id,
+						genreId: genreIds.find((g) => g.name === genre)?.id as number,
+					});
 				});
 			});
-			return;
+
+			if (movieCategories && movieCategories.length > 0) {
+				await this.prisma.movieCategories.createMany({
+					skipDuplicates: true,
+					data: movieCategories,
+				});
+			}
+
+			if (movieGenres && movieGenres.length > 0) {
+				await this.prisma.movieGenres.createMany({
+					skipDuplicates: true,
+					data: movieGenres,
+				});
+			}
+
+			return count.count;
 		} catch (error: any) {
 			throw new Error(error);
 		}
